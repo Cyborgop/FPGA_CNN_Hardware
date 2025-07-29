@@ -1,22 +1,31 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import torch
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-from model.lenet import LeNet
+from model.le_net import LeNet
 
-# Set device
+# Set device (use GPU if available)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Data loading and preprocessing
 transform = transforms.Compose([
-    transforms.ToTensor(),                  # Converts to tensor [0,1]
-    transforms.Normalize((0.1307,), (0.3081,))  # Standard MNIST normalization
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
 ])
 
-train_dataset = datasets.MNIST(root='../data', train=True, download=True, transform=transform)
-test_dataset = datasets.MNIST(root='../data', train=False, download=True, transform=transform)
+# Adjust paths if needed
+DATA_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data'))
+EXPORT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../export/weights'))
+os.makedirs(EXPORT_PATH, exist_ok=True)
+
+train_dataset = datasets.MNIST(root=DATA_ROOT, train=True, download=True, transform=transform)
+test_dataset = datasets.MNIST(root=DATA_ROOT, train=False, download=True, transform=transform)
 
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
@@ -30,6 +39,7 @@ criterion = nn.CrossEntropyLoss()
 num_epochs = 5
 model.train()
 for epoch in range(num_epochs):
+    running_loss = 0.0
     for batch_idx, (inputs, targets) in enumerate(train_loader):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
@@ -37,12 +47,13 @@ for epoch in range(num_epochs):
         loss = criterion(outputs, targets)
         loss.backward()
         optimizer.step()
-    print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
+        running_loss += loss.item()
+    print(f'Epoch {epoch+1}/{num_epochs}, Loss: {running_loss / len(train_loader):.4f}')
 
 # Save the trained model weights
-torch.save(model.state_dict(), '../export/weights/lenet_weights.pth')
+torch.save(model.state_dict(), os.path.join(EXPORT_PATH, 'lenet_weights.pth'))
 
-# Optionally, evaluate and print test accuracy
+# Evaluate and print test accuracy
 model.eval()
 correct = 0
 total = 0
