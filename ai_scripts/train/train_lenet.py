@@ -21,7 +21,7 @@ transform = transforms.Compose([
 
 # Adjust paths if needed
 DATA_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data'))
-EXPORT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../export/weights'))
+EXPORT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../ai_scripts/export/weights'))
 os.makedirs(EXPORT_PATH, exist_ok=True)
 
 train_dataset = datasets.MNIST(root=DATA_ROOT, train=True, download=True, transform=transform)

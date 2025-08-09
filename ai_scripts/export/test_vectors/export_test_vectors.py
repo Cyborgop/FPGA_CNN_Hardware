@@ -5,7 +5,7 @@ import numpy as np
 from torchvision import datasets, transforms
 
 # Add parent directory to sys.path so model.le_net can be imported
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from model.le_net import LeNet
 
@@ -13,6 +13,12 @@ from model.le_net import LeNet
 DATA_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data'))
 EXPORT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../export/test_vectors'))
 MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../export/weights/lenet_weights.pth'))
+
+# Check if weights file exists
+if not os.path.exists(MODEL_PATH):
+    print(f"ERROR: Weights file not found at: {MODEL_PATH}")
+    print("Make sure you ran the training script first and it saved successfully.")
+    exit(1)
 
 os.makedirs(EXPORT_DIR, exist_ok=True)
 
@@ -41,3 +47,5 @@ with torch.no_grad():
         np.save(os.path.join(EXPORT_DIR, f'input_{i}.npy'), inputs.cpu().numpy())
         np.save(os.path.join(EXPORT_DIR, f'output_{i}.npy'), outputs.cpu().numpy())
         np.save(os.path.join(EXPORT_DIR, f'label_{i}.npy'), targets.cpu().numpy())
+
+print(f"Exported {N} test vectors to {EXPORT_DIR}")
